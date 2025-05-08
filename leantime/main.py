@@ -83,7 +83,7 @@ class LeantimeClient:
             raise
 
 
-    def get_users(self):
+    def get_all_users(self):
         endpoint = f"{self.base_url}/api/jsonrpc"
 
         payload = {
@@ -114,5 +114,41 @@ class LeantimeClient:
             return result
 
         except Exception as e:
-            self.logger.error(f"Error getting ticket users: {str(e)}")
+            self.logger.error(f"Error getting users: {str(e)}")
             raise
+
+
+    def get_all_projects(self):
+        endpoint = f"{self.base_url}/api/jsonrpc"
+
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "leantime.rpc.Projects.Projects.getAll",
+            "params": {
+                "showClosedProjects": "false"
+            },
+            "id": 1  # Request identifier
+        }
+
+        self.logger.debug(f"Getting projects details")
+
+        try:
+            response = requests.post(endpoint, headers=self.headers, json=payload)
+            response.raise_for_status()
+
+            result = response.json()
+
+            projects = result.get('result', [])
+            result = self._filter_results(projects)
+
+            if 'error' in result:
+                self.logger.error(f"API error when getting projects: {result['error']}")
+                return {}
+
+            self.logger.debug(f"Successfully retrieved projects")
+            return result
+
+        except Exception as e:
+            self.logger.error(f"Error getting projects: {str(e)}")
+            raise
+

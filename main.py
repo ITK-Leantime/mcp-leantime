@@ -27,16 +27,20 @@ client = LeantimeClient(
 mcp = FastMCP(
     name="LeantimeMCP",
     prompt="""
-    This is a Leantime ticket management service that allows you to retrieve information about tickets in the Leantime project management system.
+    This is a Leantime management service that allows you to retrieve information about tickets, users, and projects in the Leantime project management system.
 
     You can:
-    - Retrieve a list of tickets assigned to a specific user by their user ID
+    - Retrieve a list of all projects in the system
+    - View a list of all users registered in the system
+    - Find a specific user by their email address
+    - Retrieve tickets assigned to a specific user by their user ID
     - View detailed ticket information including headlines, descriptions, due dates, statuses, and time estimates
-    - Check ticket relationships with projects
 
-    Each ticket contains rich metadata including creation dates, deadlines, priorities, planned hours, and current status.
+    Each ticket contains rich metadata including creation dates, deadlines, priorities, planned hours, and current status. 
+    User information includes identifiers, names, email addresses, roles, and account status.
+    Project data includes identifiers, names, timeline information, status, and other metadata.
 
-    Use the available tools to query the Leantime system for the information you need about user assignments and ticket details.
+    Use the available tools to query the Leantime system for the information you need about projects, users, and tickets.
     """
 )
 
@@ -99,14 +103,14 @@ async def get_all_users() -> dict:
         HTTPException: If fetching users fails for any reason
     """
     try:
-        users = client.get_users()
+        users = client.get_all_users()
         return users
     except Exception as e:
         logger.error(f"Failed to get tickets for user {user_id}: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch tickets: {str(e)}")
 
 @mcp.tool()
-async def get_all_users_by_mail(mail: str) -> dict:
+async def get_user_by_mail(mail: str) -> dict:
     """
     Get a user by their email address from the Leantime system.
 
@@ -133,13 +137,39 @@ async def get_all_users_by_mail(mail: str) -> dict:
         raise HTTPException(status_code=400, detail="Email address is required.")
 
     try:
-        users = client.get_users()
-        for user_data in users.items():
-            if user_data.get('email', '').lower() == mail.lower():
+        users = client.get_all_users()
+        for user_data in users:
+            if user_data.get('username', '').lower() == mail.lower():
                 return user_data
 
         # If no matching user found
         return {}
+    except Exception as e:
+        logger.error(f"Failed to get user ({mail}): {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch users: {str(e)}")
+
+@mcp.tool()
+async def get_all_projects() -> dict:
+    """
+    Retrieve all projects from the Leantime system.
+
+    Returns:
+        dict: Dictionary of project objects with properties including:
+            - id: Project identifier
+            - name: Project name
+            - clientId: Associated client ID
+            - timelineFrom: Project start date
+            - timelineTo: Project end date
+            - status: Project status (e.g., "open", "closed")
+            - created: Creation timestamp
+            - modified: Last modification timestamp
+            - and other project metadata
+
+    Raises:
+        HTTPException: If fetching projects fails for any reason
+    """
+    try:
+        return client.get_all_projects()
     except Exception as e:
         logger.error(f"Failed to get users: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch users: {str(e)}")
