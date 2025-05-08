@@ -14,6 +14,7 @@ set of well-defined tools.
 - Get tickets assigned to specific users
 - Retrieve all registered Leantime users
 - Look up users by email address
+- Get a list of all projects in the system
 - Clean data formatting for easy consumption by AI assistants
 
 ## Requirements
@@ -29,6 +30,12 @@ set of well-defined tools.
    ```
    pip install -e .
    ```
+
+   Or use uv:
+   ```
+   uv pip install -e .
+   ```
+
 3. Create a `.env` file in the project root with the following variables:
    ```
    LEANTIME_URL=https://your-leantime-instance.com
@@ -38,7 +45,3 @@ set of well-defined tools.
 ## Usage
 
 Start the MCP server:
-
-```bash
-python main.py
-```
