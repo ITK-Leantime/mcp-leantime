@@ -7,4 +7,5 @@ dependencies = [
     "fastapi==0.115.12",
     "fastmcp==2.2.8",
     "httpx==0.28.1",
+    "requests>=2.32.3",
 ]
